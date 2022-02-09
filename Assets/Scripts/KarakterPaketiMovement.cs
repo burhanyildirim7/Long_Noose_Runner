@@ -6,7 +6,7 @@ public class KarakterPaketiMovement : MonoBehaviour
 {
     [SerializeField] private float _speed;
 
-    void update()
+    void Update()
     {
         if (GameController.instance.isContinue == true)
         {

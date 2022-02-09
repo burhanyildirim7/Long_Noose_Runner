@@ -11,15 +11,19 @@ public class PlayerController : MonoBehaviour
     public int collectibleDegeri;
     public bool xVarMi = true;
     public bool collectibleVarMi = true;
+
     private bool left, right, isEnableForSwipe;
     [SerializeField] private float skateSpeed = 5.0f;
     [SerializeField] private float swipeControlLimit;  
     [SerializeField] private float playerSwipeSpeed;
     [SerializeField] private float horizontalRadius = 3;
-
     private float screenWidth, screenHeight;
     private float lastMousePosX, firstMousePosX, lastMousePosY, firstMousePosY;
 
+    public List<GameObject> circleRopes = new List<GameObject>();
+    public List<GameObject> xIslands = new List<GameObject>();
+    public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL;
+    private int ropeCount = 0;
 
 
     private void Awake()
@@ -184,6 +188,9 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("collectible"))
         {
             // COLLECTIBLE CARPINCA YAPILACAKLAR...
+            Destroy(other.gameObject);
+            ropeCount++;
+            AddRope();
             GameController.instance.SetScore(collectibleDegeri); // ORNEK KULLANIM detaylar icin ctrl+click yapip fonksiyon aciklamasini oku
 
         }
@@ -203,12 +210,14 @@ public class PlayerController : MonoBehaviour
         }
         else if (other.CompareTag("finish")) 
         {
+            FinalFly();
+            IdleAnim();
             // finishe collider eklenecek levellerde...
             // FINISH NOKTASINA GELINCE YAPILACAKLAR... Totalscore artırma, x işlemleri, efektler v.s. v.s.
             GameController.instance.isContinue = false;
-            GameController.instance.ScoreCarp(3);  // Bu fonksiyon normalde x ler hesaplandıktan sonra çağrılacak. Parametre olarak x i alıyor. 
+           // GameController.instance.ScoreCarp(3);  // Bu fonksiyon normalde x ler hesaplandıktan sonra çağrılacak. Parametre olarak x i alıyor. 
             // x değerine göre oyuncunun total scoreunu hesaplıyor.. x li olmayan oyunlarda parametre olarak 1 gönderilecek.
-            UIController.instance.ActivateWinScreen(); // finish noktasına gelebildiyse her türlü win screen aktif edilecek.. ama burada değil..
+            //UIController.instance.ActivateWinScreen(); // finish noktasına gelebildiyse her türlü win screen aktif edilecek.. ama burada değil..
             // normal de bu kodu x ler hesaplandıktan sonra çağıracağız. Ve bu kod çağrıldığında da kazanılan puanlar animasyonlu şekilde artacak..
 
             
@@ -216,6 +225,53 @@ public class PlayerController : MonoBehaviour
 
     }
 
+
+    void AddRope()
+	{
+        if(ropeCount < 7)
+		{
+            circleRopes[ropeCount].SetActive(true);
+            circleRopes[ropeCount + 7].SetActive(true);
+            if(ropeCount == 1)
+			{
+                parentRopeL.transform.localScale = Vector3.one*.016f;
+                parentRopeR.transform.localScale = Vector3.one*.016f;
+                bagRopeL.transform.localScale = Vector3.one*1.1f;
+                bagRopeR.transform.localScale = Vector3.one*1.1f;
+                
+			}else if(ropeCount == 3)
+			{
+                parentRopeL.transform.localScale = Vector3.one * .017f;
+                parentRopeR.transform.localScale = Vector3.one * .017f;
+                bagRopeL.transform.localScale = Vector3.one * 1.2f;
+                bagRopeR.transform.localScale = Vector3.one * 1.2f;
+            }
+            else if (ropeCount == 4)
+            {
+                parentRopeL.transform.localScale = Vector3.one * .018f;
+                parentRopeR.transform.localScale = Vector3.one * .018f;
+                bagRopeL.transform.localScale = Vector3.one * 1.3f;
+                bagRopeR.transform.localScale = Vector3.one * 1.3f;
+            }
+            else if (ropeCount == 5)
+            {
+                parentRopeL.transform.localScale = Vector3.one * .0185f;
+                parentRopeR.transform.localScale = Vector3.one * .0185f;
+                bagRopeL.transform.localScale = new Vector3(1.4f,1.4f,1.6f);
+                bagRopeR.transform.localScale = new Vector3(1.4f, 1.4f, 1.6f);
+            }
+            else if (ropeCount == 6)
+            {
+                parentRopeL.transform.localScale = Vector3.one * .019f;
+                parentRopeR.transform.localScale = Vector3.one * .019f;
+                bagRopeL.transform.localScale = new Vector3(1.4f, 1.4f, 2f);
+                bagRopeR.transform.localScale = new Vector3(1.4f, 1.4f, 2f);
+            }
+
+        }
+        
+        
+	}
 
     /// <summary>
     /// Bu fonksiyon her level baslarken cagrilir. 
@@ -235,9 +291,70 @@ public class PlayerController : MonoBehaviour
     public void PreStartingEvents()
 	{
         RunAnim();
+        GameController.instance.isContinue = true;
     }
 
-    private void RunAnim()
+    private void FinalFly()
+	{
+        int index = 0;
+        if(ropeCount >= 2 && ropeCount <= 4)
+		{
+            // 2x olabilir
+                      
+		}
+        else if(ropeCount > 4 && ropeCount <= 6)
+        {
+            // 2x olabilir
+            index += 1;
+        }
+        else if (ropeCount > 6 && ropeCount <= 8)
+        {
+            // 2x olabilir
+            index += 2;
+        }
+        else if (ropeCount > 6 && ropeCount <= 8)
+        {
+            // 2x olabilir
+            index += 3;
+        }
+        else if (ropeCount > 8 && ropeCount <= 10)
+        {
+            // 2x olabilir
+            index += 4;
+        }
+        else if (ropeCount > 10 && ropeCount <= 12)
+        {
+            // 2x olabilir
+            index += 5;
+        }
+        transform.DOMove(new Vector3(0, transform.position.y + index*2f, transform.position.z + index * 2f), .4f).SetEase(Ease.InCirc).
+                OnComplete(() => { StartCoroutine(FinalFlyMovement(xIslands[index],index*2)); });
+    }
+
+    private IEnumerator FinalFlyMovement(GameObject xObject, int height)
+	{
+        float aci = 0;
+        float y = transform.position.y;
+        float tempY = transform.position.y;
+        float aciSayaci = (xObject.transform.position.z - transform.position.z)/625 ;
+        Debug.Log(aciSayaci);
+
+        while(transform.position.z < xObject.transform.position.z)
+		{
+            if(aci < 90)
+			{
+                aci += .6f;
+                y = -height* Mathf.Sin(Mathf.Deg2Rad * aci) + tempY;
+            }
+           
+            transform.position = new Vector3(0,y,transform.position.z +.1f);
+            yield return new WaitForSeconds(.004f);
+		}
+	}
+
+	#region ANIMATIONS .....
+
+	private void RunAnim()
 	{
         GetComponentInChildren<Animator>().SetTrigger("run");
         StartCoroutine(DelayAndResetAnims());
@@ -269,5 +386,7 @@ public class PlayerController : MonoBehaviour
         GetComponentInChildren<Animator>().ResetTrigger("run");
         GetComponentInChildren<Animator>().ResetTrigger("slide");
     }
+
+	#endregion
 
 }
