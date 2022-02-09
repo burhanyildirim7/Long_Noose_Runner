@@ -10,25 +10,70 @@ public class PlayerController : MonoBehaviour
     public int collectibleDegeri;
     public bool xVarMi = true;
     public bool collectibleVarMi = true;
+    Rigidbody rb;
+    private bool left, right, isEnableForSwipe;
+    public float skateSpeed = 5.0f;
+    public float swipeControlLimit = 50f;  
+    public float horizontalRadius = 3;
+
+
+    private Vector3 leftPos, rightPos, centerPos;
+
 
 
     private void Awake()
     {
         if (instance == null) instance = this;
-        //else Destroy(this);
+        else Destroy(this);
     }
 
     void Start()
     {
         StartingEvents();
+        rb = GetComponent<Rigidbody>();
+        leftPos = new Vector3(-horizontalRadius,transform.position.y,transform.position.z);
+        rightPos = new Vector3(horizontalRadius,transform.position.y,transform.position.z);
+        centerPos = new Vector3(0, transform.position.y, transform.position.z);
     }
 
-    /// <summary>
-    /// Playerin collider olaylari.. collectible, engel veya finish noktasi icin. Burasi artirilabilir.
-    /// elmas icin veya baska herhangi etkilesimler icin tag ekleyerek kontrol dongusune eklenir.
-    /// </summary>
-    /// <param name="other"></param>
-    private void OnTriggerEnter(Collider other)
+	private void Update()
+	{
+		if(Input.touchCount > 0 && isEnableForSwipe)
+		{
+            isEnableForSwipe = false;
+            Touch myTouch = Input.GetTouch(0);
+            if(myTouch.deltaPosition.x > swipeControlLimit) 
+			{
+                right = true;
+                left = false;
+			}
+            else if (myTouch.deltaPosition.x < -swipeControlLimit) 
+            {
+                right = false;
+                left = true;
+            }
+
+			
+        }
+	}
+
+	private void Move()
+	{
+        if (right)
+        {
+            if (transform.position.x > horizontalRadius - 1) return;
+            else if (transform.position.x > 1)
+                transform.position = Vector3.Lerp(transform.position, rightPos, skateSpeed * Time.deltaTime);
+            // else if()
+        }
+    }
+
+	/// <summary>
+	/// Playerin collider olaylari.. collectible, engel veya finish noktasi icin. Burasi artirilabilir.
+	/// elmas icin veya baska herhangi etkilesimler icin tag ekleyerek kontrol dongusune eklenir.
+	/// </summary>
+	/// <param name="other"></param>
+	private void OnTriggerEnter(Collider other)
     {
 
         if (other.CompareTag("collectible"))
