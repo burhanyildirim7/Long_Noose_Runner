@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     public int collectibleDegeri;
     public bool xVarMi = true;
     public bool collectibleVarMi = true;
-    Rigidbody rb;
     private bool left, right, isEnableForSwipe;
     [SerializeField] private float skateSpeed = 5.0f;
     [SerializeField] private float swipeControlLimit;  
@@ -19,7 +18,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float horizontalRadius = 3;
 
     private float screenWidth, screenHeight;
-    private Vector3 leftPos, rightPos, centerPos;
     private float lastMousePosX, firstMousePosX, lastMousePosY, firstMousePosY;
 
 
@@ -37,10 +35,6 @@ public class PlayerController : MonoBehaviour
         screenWidth = Screen.width / 2;
         screenWidth = Screen.height / 2;
         Debug.Log(screenWidth);
-        //rb = GetComponent<Rigidbody>();
-        //leftPos = new Vector3(-horizontalRadius,transform.position.y,transform.position.z);
-        //rightPos = new Vector3(horizontalRadius,transform.position.y,transform.position.z);
-        //centerPos = new Vector3(0, transform.position.y, transform.position.z);
     }
 
 	private void Update()
@@ -71,7 +65,7 @@ public class PlayerController : MonoBehaviour
 			else if (myTouch.deltaPosition.y < -swipeControlLimit)
 			{
 				isEnableForSwipe = false;
-				SkateEvents();
+				SlideEvents();
 				Debug.Log("aşağı sürükledin beni...");
 				return;
 			}
@@ -91,14 +85,12 @@ public class PlayerController : MonoBehaviour
 		{
             lastMousePosX = Input.mousePosition.x - screenWidth;
             lastMousePosY = Input.mousePosition.y - screenHeight;
-            Debug.Log(lastMousePosX - firstMousePosX);
             if((lastMousePosX - firstMousePosX) > swipeControlLimit) // sağa
 			{
                 isEnableForSwipe = false;
                 right = true;
                 left = false;
                 MoveHorizontal();
-                Debug.Log("sağa sürükledin beni...");
                 return;
             }
             else if((lastMousePosX - firstMousePosX) < -swipeControlLimit) // sola
@@ -107,14 +99,12 @@ public class PlayerController : MonoBehaviour
                 right = false;
                 left = true;
                 MoveHorizontal();
-                Debug.Log("sola sürükledin beni...");
                 return;
             }
             else if((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
 			{
                 isEnableForSwipe = false;
-                SkateEvents();
-                Debug.Log("aşağı sürükledin beni...");
+                SlideEvents();
                 return;
             }
         }
@@ -132,41 +122,55 @@ public class PlayerController : MonoBehaviour
         if (right)
         {
             if (transform.position.x > horizontalRadius - 1) return;
-            else if (transform.position.x > -1)
-                transform.DOMoveX(horizontalRadius, playerSwipeSpeed).OnComplete(()=> 
+            else if (transform.position.x > -1) 
+            {
+                JumpAnim();
+                transform.DOMoveX(horizontalRadius, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
-            // transform.position = Vector3.Lerp(transform.position, rightPos, skateSpeed * Time.deltaTime);
+            }                        
             else if (transform.position.x  < -1)
+			{
+                JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
+            }          
         }
         else if (left)
         {
             if (transform.position.x < -horizontalRadius + 1) return;
             else if (transform.position.x < 1)
+			{
+                JumpAnim();
                 transform.DOMoveX(-horizontalRadius, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
+            }
+                
             else if (transform.position.x > 1)
+			{
+                JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
+            }
+                
         }
     }
 
-    private void SkateEvents()
+    private void SlideEvents()
 	{
         // collider küçülecek... kayma animasyonu yapılacak... 
+        SlideAnim();
 	}
 
 	/// <summary>
@@ -226,6 +230,44 @@ public class PlayerController : MonoBehaviour
         transform.position = new Vector3(0, transform.position.y, 0);
         GetComponent<Collider>().enabled = true;
 
+    }
+
+    public void PreStartingEvents()
+	{
+        RunAnim();
+    }
+
+    private void RunAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("run");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private void IdleAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("idle");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private void JumpAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("jump");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private void SlideAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("slide");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private IEnumerator DelayAndResetAnims()
+	{
+        yield return new WaitForSeconds(.1f);
+        GetComponentInChildren<Animator>().ResetTrigger("idle");
+        GetComponentInChildren<Animator>().ResetTrigger("jump");
+        GetComponentInChildren<Animator>().ResetTrigger("run");
+        GetComponentInChildren<Animator>().ResetTrigger("slide");
     }
 
 }

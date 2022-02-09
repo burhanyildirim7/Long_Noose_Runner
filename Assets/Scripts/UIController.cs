@@ -45,7 +45,8 @@ public class UIController : MonoBehaviour
 	{
 
 		GameController.instance.isContinue = true;
-		//PlayerController.instance.SetArmForGaming();
+		PlayerController.instance.StartingEvents();
+		PlayerController.instance.PreStartingEvents();
 		TapToStartPanel.SetActive(false);
 		GamePanel.SetActive(true);
 		SetLevelText(LevelController.instance.totalLevelNo);

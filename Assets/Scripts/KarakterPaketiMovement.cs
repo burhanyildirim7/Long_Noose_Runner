@@ -6,23 +6,12 @@ public class KarakterPaketiMovement : MonoBehaviour
 {
     [SerializeField] private float _speed;
 
-    void Start()
-    {
-     
-    }
-
-
-    void FixedUpdate()
+    void update()
     {
         if (GameController.instance.isContinue == true)
         {
             transform.Translate(Vector3.forward * Time.deltaTime * _speed);
-        }
-        else
-        {
-
-        }
-        
+        }      
     }
 
 }
