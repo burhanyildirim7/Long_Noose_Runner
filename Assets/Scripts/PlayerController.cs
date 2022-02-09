@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour
 {
@@ -12,12 +13,14 @@ public class PlayerController : MonoBehaviour
     public bool collectibleVarMi = true;
     Rigidbody rb;
     private bool left, right, isEnableForSwipe;
-    public float skateSpeed = 5.0f;
-    public float swipeControlLimit = 50f;  
-    public float horizontalRadius = 3;
+    [SerializeField] private float skateSpeed = 5.0f;
+    [SerializeField] private float swipeControlLimit;  
+    [SerializeField] private float playerSwipeSpeed;
+    [SerializeField] private float horizontalRadius = 3;
 
-
+    private float screenWidth, screenHeight;
     private Vector3 leftPos, rightPos, centerPos;
+    private float lastMousePosX, firstMousePosX, lastMousePosY, firstMousePosY;
 
 
 
@@ -29,44 +32,142 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        DOTween.Init();
         StartingEvents();
-        rb = GetComponent<Rigidbody>();
-        leftPos = new Vector3(-horizontalRadius,transform.position.y,transform.position.z);
-        rightPos = new Vector3(horizontalRadius,transform.position.y,transform.position.z);
-        centerPos = new Vector3(0, transform.position.y, transform.position.z);
+        screenWidth = Screen.width / 2;
+        screenWidth = Screen.height / 2;
+        Debug.Log(screenWidth);
+        //rb = GetComponent<Rigidbody>();
+        //leftPos = new Vector3(-horizontalRadius,transform.position.y,transform.position.z);
+        //rightPos = new Vector3(horizontalRadius,transform.position.y,transform.position.z);
+        //centerPos = new Vector3(0, transform.position.y, transform.position.z);
     }
 
 	private void Update()
 	{
-		if(Input.touchCount > 0 && isEnableForSwipe)
+		#region For Mobile Control ... SBI
+		if (Input.touchCount > 0 && isEnableForSwipe)
 		{
-            isEnableForSwipe = false;
-            Touch myTouch = Input.GetTouch(0);
-            if(myTouch.deltaPosition.x > swipeControlLimit) 
+			Touch myTouch = Input.GetTouch(0);
+			if (myTouch.deltaPosition.x > swipeControlLimit)
 			{
+				isEnableForSwipe = false;
+				right = true;
+				left = false;
+				MoveHorizontal();
+				Debug.Log("sağa sürükledin beni...");
+				return;
+
+			}
+			else if (myTouch.deltaPosition.x < -swipeControlLimit)
+			{
+				isEnableForSwipe = false;
+				right = false;
+				left = true;
+				MoveHorizontal();
+				Debug.Log("sola sürükledin beni...");
+				return;
+			}
+			else if (myTouch.deltaPosition.y < -swipeControlLimit)
+			{
+				isEnableForSwipe = false;
+				SkateEvents();
+				Debug.Log("aşağı sürükledin beni...");
+				return;
+			}
+		}
+		#endregion
+
+
+
+		#region For Stand Control ... SBI
+
+		if (Input.GetMouseButtonDown(0))
+		{
+            firstMousePosX = Input.mousePosition.x - screenWidth;
+            firstMousePosY = Input.mousePosition.y - screenHeight;
+        }
+		if (Input.GetMouseButton(0))
+		{
+            lastMousePosX = Input.mousePosition.x - screenWidth;
+            lastMousePosY = Input.mousePosition.y - screenHeight;
+            Debug.Log(lastMousePosX - firstMousePosX);
+            if((lastMousePosX - firstMousePosX) > swipeControlLimit) // sağa
+			{
+                isEnableForSwipe = false;
                 right = true;
                 left = false;
-			}
-            else if (myTouch.deltaPosition.x < -swipeControlLimit) 
-            {
+                MoveHorizontal();
+                Debug.Log("sağa sürükledin beni...");
+                return;
+            }
+            else if((lastMousePosX - firstMousePosX) < -swipeControlLimit) // sola
+			{
+                isEnableForSwipe = false;
                 right = false;
                 left = true;
+                MoveHorizontal();
+                Debug.Log("sola sürükledin beni...");
+                return;
             }
-
-			
+            else if((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
+			{
+                isEnableForSwipe = false;
+                SkateEvents();
+                Debug.Log("aşağı sürükledin beni...");
+                return;
+            }
         }
+
+		if (Input.GetMouseButtonUp(0))
+		{
+            lastMousePosX = firstMousePosX = lastMousePosY = firstMousePosY = 0;
+		}
+
+		#endregion
 	}
 
-	private void Move()
+	private void MoveHorizontal()
 	{
         if (right)
         {
             if (transform.position.x > horizontalRadius - 1) return;
+            else if (transform.position.x > -1)
+                transform.DOMoveX(horizontalRadius, playerSwipeSpeed).OnComplete(()=> 
+                {
+                    isEnableForSwipe = true;
+                    return;
+                });
+            // transform.position = Vector3.Lerp(transform.position, rightPos, skateSpeed * Time.deltaTime);
+            else if (transform.position.x  < -1)
+                transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
+                {
+                    isEnableForSwipe = true;
+                    return;
+                });
+        }
+        else if (left)
+        {
+            if (transform.position.x < -horizontalRadius + 1) return;
+            else if (transform.position.x < 1)
+                transform.DOMoveX(-horizontalRadius, playerSwipeSpeed).OnComplete(() =>
+                {
+                    isEnableForSwipe = true;
+                    return;
+                });
             else if (transform.position.x > 1)
-                transform.position = Vector3.Lerp(transform.position, rightPos, skateSpeed * Time.deltaTime);
-            // else if()
+                transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
+                {
+                    isEnableForSwipe = true;
+                    return;
+                });
         }
     }
+
+    private void SkateEvents()
+	{
+        // collider küçülecek... kayma animasyonu yapılacak... 
+	}
 
 	/// <summary>
 	/// Playerin collider olaylari.. collectible, engel veya finish noktasi icin. Burasi artirilabilir.
