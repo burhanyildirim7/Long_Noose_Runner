@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     public int collectibleDegeri;
     public bool xVarMi = true;
     public bool collectibleVarMi = true;
-
     private bool left, right, isEnableForSwipe;
     [SerializeField] private float skateSpeed = 5.0f;
     [SerializeField] private float swipeControlLimit;  
@@ -19,10 +18,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float horizontalRadius = 3;
     private float screenWidth, screenHeight;
     private float lastMousePosX, firstMousePosX, lastMousePosY, firstMousePosY;
-
+    private float colliderHeight, colliderPosY;
     public List<GameObject> circleRopes = new List<GameObject>();
     public List<GameObject> xIslands = new List<GameObject>();
-    public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL;
+    public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL,atlamaRopu,sallananRopeL,sallananRopeR,artiBir,eksiBir,model;
     private int ropeCount = 0;
 
 
@@ -34,11 +33,12 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        colliderHeight = GetComponent<CapsuleCollider>().height;
+        colliderPosY = GetComponent<CapsuleCollider>().center.y;
         DOTween.Init();
         StartingEvents();
         screenWidth = Screen.width / 2;
         screenWidth = Screen.height / 2;
-        Debug.Log(screenWidth);
     }
 
 	private void Update()
@@ -53,7 +53,6 @@ public class PlayerController : MonoBehaviour
 				right = true;
 				left = false;
 				MoveHorizontal();
-				Debug.Log("sağa sürükledin beni...");
 				return;
 
 			}
@@ -63,14 +62,13 @@ public class PlayerController : MonoBehaviour
 				right = false;
 				left = true;
 				MoveHorizontal();
-				Debug.Log("sola sürükledin beni...");
 				return;
 			}
 			else if (myTouch.deltaPosition.y < -swipeControlLimit)
 			{
-				isEnableForSwipe = false;
+                StartCoroutine(DelayAndNormalizedCollider());
+                //isEnableForSwipe = false;
 				SlideEvents();
-				Debug.Log("aşağı sürükledin beni...");
 				return;
 			}
 		}
@@ -85,7 +83,7 @@ public class PlayerController : MonoBehaviour
             firstMousePosX = Input.mousePosition.x - screenWidth;
             firstMousePosY = Input.mousePosition.y - screenHeight;
         }
-		if (Input.GetMouseButton(0))
+		if (Input.GetMouseButton(0) && isEnableForSwipe)
 		{
             lastMousePosX = Input.mousePosition.x - screenWidth;
             lastMousePosY = Input.mousePosition.y - screenHeight;
@@ -107,8 +105,9 @@ public class PlayerController : MonoBehaviour
             }
             else if((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
 			{
-                isEnableForSwipe = false;
-                SlideEvents();
+                StartCoroutine(DelayAndNormalizedCollider());
+                //isEnableForSwipe = false;
+                SlideEvents();            
                 return;
             }
         }
@@ -119,6 +118,15 @@ public class PlayerController : MonoBehaviour
 		}
 
 		#endregion
+	}
+
+    IEnumerator DelayAndNormalizedCollider()
+	{
+        GetComponent<CapsuleCollider>().height = 1.5f;
+        GetComponent<CapsuleCollider>().center = new Vector3(0, .8f, 0);
+        yield return new WaitForSeconds(.8f);
+        GetComponent<CapsuleCollider>().height = colliderHeight;
+        GetComponent<CapsuleCollider>().center = new Vector3(0,colliderPosY,0);
 	}
 
 	private void MoveHorizontal()
@@ -190,37 +198,64 @@ public class PlayerController : MonoBehaviour
             // COLLECTIBLE CARPINCA YAPILACAKLAR...
             Destroy(other.gameObject);
             ropeCount++;
+            if(ropeCount > 0)
+			{
+                sallananRopeL.SetActive(true);
+                sallananRopeR.SetActive(true);
+                bagRopeL.SetActive(true);
+                bagRopeR.SetActive(true);
+            }
             AddRope();
             GameController.instance.SetScore(collectibleDegeri); // ORNEK KULLANIM detaylar icin ctrl+click yapip fonksiyon aciklamasini oku
-
+            GameObject arti = Instantiate(artiBir, new Vector3(model.transform.position.x,model.transform.position.y + 3,model.transform.position.z), Quaternion.identity, model.transform);
+            TextAnim(arti);
         }
         else if (other.CompareTag("engel"))
         {
             // ENGELELRE CARPINCA YAPILACAKLAR....
+
+            GameObject eksi = Instantiate(eksiBir, new Vector3(model.transform.position.x, model.transform.position.y + 3, model.transform.position.z), Quaternion.identity, model.transform);
+            TextAnim(eksi);
             GameController.instance.SetScore(-collectibleDegeri); // ORNEK KULLANIM detaylar icin ctrl+click yapip fonksiyon aciklamasini oku
+            ropeCount--;
+            if (ropeCount == 0)
+            {
+                sallananRopeL.SetActive(false);
+                sallananRopeR.SetActive(false);
+                bagRopeL.SetActive(false);
+                bagRopeR.SetActive(false);
+            }
+            AddRope();
             if (GameController.instance.score < 0) // SKOR SIFIRIN ALTINA DUSTUYSE
 			{
-                // FAİL EVENTLERİ BURAYA YAZILACAK..
                 GameController.instance.isContinue = false; // çarptığı anda oyuncunun yerinde durması ilerlememesi için
-                UIController.instance.ActivateLooseScreen(); // Bu fonksiyon direk çağrılada bilir veya herhangi bir effect veya animasyon bitiminde de çağrılabilir..
-                // oyuncu fail durumunda bu fonksiyon çağrılacak.. 
+                UIController.instance.ActivateLooseScreen();
+                IdleAnim();
 			}
-
+			else
+			{
+                CrashAnim();
+			}   
 
         }
         else if (other.CompareTag("finish")) 
         {
-            FinalFly();
             IdleAnim();
-            // finishe collider eklenecek levellerde...
-            // FINISH NOKTASINA GELINCE YAPILACAKLAR... Totalscore artırma, x işlemleri, efektler v.s. v.s.
             GameController.instance.isContinue = false;
-           // GameController.instance.ScoreCarp(3);  // Bu fonksiyon normalde x ler hesaplandıktan sonra çağrılacak. Parametre olarak x i alıyor. 
-            // x değerine göre oyuncunun total scoreunu hesaplıyor.. x li olmayan oyunlarda parametre olarak 1 gönderilecek.
-            //UIController.instance.ActivateWinScreen(); // finish noktasına gelebildiyse her türlü win screen aktif edilecek.. ama burada değil..
-            // normal de bu kodu x ler hesaplandıktan sonra çağıracağız. Ve bu kod çağrıldığında da kazanılan puanlar animasyonlu şekilde artacak..
-
-            
+           // GetComponent<Collider>().enabled = false;
+           if(ropeCount == 0)
+			{
+                UIController.instance.ActivateLooseScreen();              
+                return;
+            }
+			else
+			{
+                FinalFly();
+            }
+                    
+        }else if (other.CompareTag("finalx"))
+		{
+            FinalEffectEvents(other.gameObject);
         }
 
     }
@@ -228,10 +263,18 @@ public class PlayerController : MonoBehaviour
 
     void AddRope()
 	{
-        if(ropeCount < 7)
+        if(ropeCount < 0)
 		{
-            circleRopes[ropeCount].SetActive(true);
-            circleRopes[ropeCount + 7].SetActive(true);
+            GameController.instance.isContinue = false; // çarptığı anda oyuncunun yerinde durması ilerlememesi için
+            UIController.instance.ActivateLooseScreen();
+            IdleAnim();
+        }
+        else if(ropeCount < 8)
+		{
+            if(ropeCount !=0)circleRopes[ropeCount-1].SetActive(true);
+            if(ropeCount< 7)circleRopes[ropeCount].SetActive(false);
+            if (ropeCount !=0) circleRopes[ropeCount + 6].SetActive(true);
+            if (ropeCount < 7) circleRopes[ropeCount + 7].SetActive(false);
             if(ropeCount == 1)
 			{
                 parentRopeL.transform.localScale = Vector3.one*.016f;
@@ -278,14 +321,27 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void StartingEvents()
     {
-
+        foreach(var rope in circleRopes)
+		{
+            rope.SetActive(false);
+           
+		}
+        ropeCount = 0;
+        parentRopeL.transform.localScale = Vector3.one*.015f;
+        parentRopeR.transform.localScale = Vector3.one*.015f;
+        bagRopeL.transform.localScale = Vector3.one;
+        bagRopeR.transform.localScale = Vector3.one;
+        sallananRopeL.SetActive(false);
+        sallananRopeR.SetActive(false);
+        bagRopeL.SetActive(false);
+        bagRopeR.SetActive(false);
         transform.parent.transform.rotation = Quaternion.Euler(0, 0, 0);
         transform.parent.transform.position = Vector3.zero;
         GameController.instance.isContinue = false;
         GameController.instance.score = 0;
         transform.position = new Vector3(0, transform.position.y, 0);
         GetComponent<Collider>().enabled = true;
-
+        isEnableForSwipe = true;
     }
 
     public void PreStartingEvents()
@@ -300,17 +356,18 @@ public class PlayerController : MonoBehaviour
         if(ropeCount >= 2 && ropeCount <= 4)
 		{
             // 2x olabilir
-                      
 		}
         else if(ropeCount > 4 && ropeCount <= 6)
         {
             // 2x olabilir
             index += 1;
+
         }
         else if (ropeCount > 6 && ropeCount <= 8)
         {
             // 2x olabilir
             index += 2;
+
         }
         else if (ropeCount > 6 && ropeCount <= 8)
         {
@@ -326,34 +383,70 @@ public class PlayerController : MonoBehaviour
         {
             // 2x olabilir
             index += 5;
-        }
-        transform.DOMove(new Vector3(0, transform.position.y + index*2f, transform.position.z + index * 2f), .4f).SetEase(Ease.InCirc).
-                OnComplete(() => { StartCoroutine(FinalFlyMovement(xIslands[index],index*2)); });
+		}
+		else
+		{
+            index += 6;
+		}
+        GetComponent<Collider>().enabled = false;
+        atlamaRopu.gameObject.SetActive(true);
+        atlamaRopu.transform.DOScale(new Vector3(1,1,1),.2f);
+        transform.DOMove(new Vector3(0, transform.position.y + index*2f, transform.position.z + index * 2f), .5f).SetEase(Ease.InCirc).
+                OnComplete(() => { StartCoroutine(FinalFlyMovement(xIslands[index],index*1.5f)); });
+
+        GameController.instance.ScoreCarp(index+1);
     }
 
-    private IEnumerator FinalFlyMovement(GameObject xObject, int height)
+    private IEnumerator FinalFlyMovement(GameObject xObject, float height)
 	{
-        float aci = 0;
-        float y = transform.position.y;
+        float aci; ;
+        float y;
+        float z;
+        float tempZ = transform.position.z;
         float tempY = transform.position.y;
-        float aciSayaci = (xObject.transform.position.z - transform.position.z)/625 ;
-        Debug.Log(aciSayaci);
+        float dist = 0;
+        float addDistance = 0.009f / ((height / 1.5f) + 1);
+        while (dist < 1)
+        {
+            dist+=addDistance;
+            aci = Mathf.Lerp(0,180,dist);
+            z = Mathf.Lerp(tempZ,xObject.transform.position.z,dist);
+            y = -height * Mathf.Sin(Mathf.Deg2Rad * aci) + tempY;
 
-        while(transform.position.z < xObject.transform.position.z)
-		{
-            if(aci < 90)
-			{
-                aci += .6f;
-                y = -height* Mathf.Sin(Mathf.Deg2Rad * aci) + tempY;
-            }
-           
-            transform.position = new Vector3(0,y,transform.position.z +.1f);
-            yield return new WaitForSeconds(.004f);
-		}
+            //transform.position = Vector3.Lerp(transform.position,xObject.transform.position+ new Vector3(0,y,0),dist);
+            transform.position = new Vector3(0, y, z);
+            yield return new WaitForSeconds(.005f);
+        }
+
+
+        //      while (transform.position.z < xObject.transform.position.z)
+        //{
+        //          if(aci < 180)
+        //	{
+        //              aci += .9f;
+        //              y = -height* Mathf.Sin(Mathf.Deg2Rad * aci) + tempY;
+        //          }
+
+        //          transform.position = new Vector3(0,y,transform.position.z +.1f);
+        //          yield return new WaitForSeconds(.004f);
+        //}
+        atlamaRopu.SetActive(false);
+        transform.DOMove(xObject.transform.position + new Vector3(0,2.8f,0),.6f).SetEase(Ease.OutFlash)
+            .OnComplete(()=> { GetComponent<Collider>().enabled = true; });
+	}
+
+   void FinalEffectEvents(GameObject island)
+	{
+        island.transform.GetChild(0).gameObject.SetActive(true);
+        UIController.instance.ActivateWinScreen();
 	}
 
 	#region ANIMATIONS .....
-
+    private void TextAnim(GameObject obj)
+	{
+        obj.transform.DOScale(Vector3.one * .2f, .5f);
+        obj.transform.DOMoveY(5, .5f).OnComplete(()=> { Destroy(obj); });
+    }
 	private void RunAnim()
 	{
         GetComponentInChildren<Animator>().SetTrigger("run");
@@ -378,6 +471,12 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(DelayAndResetAnims());
     }
 
+    private void CrashAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("crash");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
     private IEnumerator DelayAndResetAnims()
 	{
         yield return new WaitForSeconds(.1f);
@@ -385,6 +484,7 @@ public class PlayerController : MonoBehaviour
         GetComponentInChildren<Animator>().ResetTrigger("jump");
         GetComponentInChildren<Animator>().ResetTrigger("run");
         GetComponentInChildren<Animator>().ResetTrigger("slide");
+        GetComponentInChildren<Animator>().ResetTrigger("crash");
     }
 
 	#endregion

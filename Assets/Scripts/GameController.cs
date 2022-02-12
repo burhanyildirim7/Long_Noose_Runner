@@ -60,6 +60,7 @@ public class GameController : MonoBehaviour
         if (PlayerController.instance.xVarMi) score *= katsayi;
         else score = 1 * score;
         PlayerPrefs.SetInt("totalScore", PlayerPrefs.GetInt("totalScore") + score);
+        Debug.Log(PlayerPrefs.GetInt("totalScore"));
     }
 
 }

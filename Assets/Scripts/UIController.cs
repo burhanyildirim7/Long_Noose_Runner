@@ -121,13 +121,14 @@ public class UIController : MonoBehaviour
 
 	IEnumerator WinScreenDelay()
 	{
+		yield return new WaitForSeconds(1.5f);
 		WinPanel.SetActive(true);
 		winScreenScoreText.text = "0";
 		int sayac = 0;
-		while(sayac < GameController.instance.score)
+		while (sayac < GameController.instance.score)
 		{
-			sayac++;
-			if(sayac %2 == 0)
+			sayac+=10;
+			if(sayac %20 == 0)
 			{
 				GameObject effectObj = Instantiate(winScreenEffectObject, new Vector3(144, 400, 0), Quaternion.identity,winScreenCoinImage.transform);
 				effectObj.transform.localPosition = new Vector3(144,300,0);
