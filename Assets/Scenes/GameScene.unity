@@ -668,7 +668,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 491930911}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 125}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1821,7 +1821,7 @@ MonoBehaviour:
     ModeOverride: 0
     LensShift: {x: 0, y: 0}
     GateFit: 2
-    m_SensorSize: {x: 0.46220303, y: 1}
+    m_SensorSize: {x: 0.4620853, y: 1}
   m_Transitions:
     m_BlendHint: 0
     m_InheritPosition: 0
@@ -2832,7 +2832,7 @@ MonoBehaviour:
   skateSpeed: 5
   swipeControlLimit: 250
   playerSwipeSpeed: 0.8
-  horizontalRadius: 3
+  horizontalRadius: 2
   circleRopes:
   - {fileID: 5233112405379962039}
   - {fileID: 657119112}
@@ -3445,8 +3445,8 @@ MonoBehaviour:
   tempLevelNo: 0
   totalLevelNo: 0
   levels:
-  - {fileID: 2326151854888573912, guid: ab3fdb45381358a42bbb5b36e3904ecb, type: 3}
-  - {fileID: 2326151854888573912, guid: ab3fdb45381358a42bbb5b36e3904ecb, type: 3}
+  - {fileID: 7649348031466776416, guid: d8e84d32362c5144797e94f920e594bb, type: 3}
+  - {fileID: 7649348031466776416, guid: d8e84d32362c5144797e94f920e594bb, type: 3}
 --- !u!1 &2080463388
 GameObject:
   m_ObjectHideFlags: 0

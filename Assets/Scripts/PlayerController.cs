@@ -444,7 +444,7 @@ public class PlayerController : MonoBehaviour
 	#region ANIMATIONS .....
     private void TextAnim(GameObject obj)
 	{
-        obj.transform.DOScale(Vector3.one * .2f, .5f);
+        obj.transform.DOScale(Vector3.one * .15f, .5f);
         obj.transform.DOMoveY(5, .5f).OnComplete(()=> { Destroy(obj); });
     }
 	private void RunAnim()
@@ -480,12 +480,12 @@ public class PlayerController : MonoBehaviour
     private IEnumerator DelayAndResetAnims()
 	{
         yield return new WaitForSeconds(.1f);
-        GetComponentInChildren<Animator>().ResetTrigger("idle");
-        GetComponentInChildren<Animator>().ResetTrigger("jump");
-        GetComponentInChildren<Animator>().ResetTrigger("run");
-        GetComponentInChildren<Animator>().ResetTrigger("slide");
-        GetComponentInChildren<Animator>().ResetTrigger("crash");
-    }
+		GetComponentInChildren<Animator>().ResetTrigger("idle");
+		GetComponentInChildren<Animator>().ResetTrigger("jump");
+		GetComponentInChildren<Animator>().ResetTrigger("run");
+		GetComponentInChildren<Animator>().ResetTrigger("slide");
+		GetComponentInChildren<Animator>().ResetTrigger("crash");
+	}
 
 	#endregion
 
