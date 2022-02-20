@@ -8,7 +8,7 @@ public class UIController : MonoBehaviour
 	public static UIController instance; // Singleton yapisi icin gerekli ornek
 
 	public GameObject TapToStartPanel, LoosePanel, GamePanel, WinPanel,winScreenEffectObject, winScreenCoinImage,startScreenCoinImage,scoreEffect;
-	public Text gamePlayScoreText, winScreenScoreText, levelNoText, tapToStartScoreText, totalElmasText;
+	public Text gamePlayScoreText, winScreenScoreText, levelNoText, tapToStartScoreText, totalElmasText, playerRopeCountText;
 	public Animator ScoreTextAnim;
 
 
@@ -229,6 +229,9 @@ public class UIController : MonoBehaviour
 		tapToStartScoreText.text = PlayerPrefs.GetInt("total").ToString();
 	}
 
-	
+	public void SetPlayerRopeCountText(int ropeCount)
+	{
+		playerRopeCountText.text = ropeCount.ToString();
+	}
 
 }
