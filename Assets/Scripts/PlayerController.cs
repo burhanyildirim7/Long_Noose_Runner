@@ -240,7 +240,7 @@ public class PlayerController : MonoBehaviour
         }
         else if (other.CompareTag("finish")) 
         {
-            IdleAnim();
+            RopePosAnim();
             GameController.instance.isContinue = false;
            // GetComponent<Collider>().enabled = false;
            if(ropeCount == 0)
@@ -391,12 +391,24 @@ public class PlayerController : MonoBehaviour
         GetComponent<Collider>().enabled = false;
         atlamaRopu.gameObject.SetActive(true);
         atlamaRopu.transform.DOScale(new Vector3(1,1,1),.2f);
-        transform.DOMove(new Vector3(0, transform.position.y + index*2f, transform.position.z + index * 2f), .5f).SetEase(Ease.InCirc).
-                OnComplete(() => { StartCoroutine(FinalFlyMovement(xIslands[index],index*1.5f)); });
+        transform.DOJump(new Vector3(0, xIslands[index].transform.position.y+10, xIslands[index].transform.position.z),-30+index*2,1, 3f).
+                OnComplete(() => {
+                    RopeJumpAnim();
+                    atlamaRopu.SetActive(false);
+                    transform.DOMove(xIslands[index].transform.position + new Vector3(0, 2.8f, 0), .5f).SetEase(Ease.OutFlash);
+                    GetComponent<Collider>().enabled = true;
+                    //.OnComplete(() => { GetComponent<Collider>().enabled = true; });
+                });
+        //transform.DOMove(new Vector3(0, transform.position.y + index*2f, transform.position.z + index * 2f), .5f).SetEase(Ease.InCirc).
+        //        OnComplete(() => { StartCoroutine(FinalFlyMovement(xIslands[index],index*1.5f)); });
 
         GameController.instance.ScoreCarp(index+1);
     }
 
+    private void FinalFlyDoMove()
+	{
+
+	}
     private IEnumerator FinalFlyMovement(GameObject xObject, float height)
 	{
         float aci; ;
@@ -444,7 +456,7 @@ public class PlayerController : MonoBehaviour
 	#region ANIMATIONS .....
     private void TextAnim(GameObject obj)
 	{
-        obj.transform.DOScale(Vector3.one * .15f, .5f);
+        obj.transform.DOScale(Vector3.one * .12f, .5f);
         obj.transform.DOMoveY(5, .5f).OnComplete(()=> { Destroy(obj); });
     }
 	private void RunAnim()
@@ -473,18 +485,32 @@ public class PlayerController : MonoBehaviour
 
     private void CrashAnim()
 	{
-        GetComponentInChildren<Animator>().SetTrigger("crash");
+        GetComponentInChildren<Animator>().SetTrigger("struggle");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private void RopeJumpAnim()
+	{
+        GetComponentInChildren<Animator>().SetTrigger("ropejump");
+        StartCoroutine(DelayAndResetAnims());
+    }
+
+    private void RopePosAnim()
+    {
+        GetComponentInChildren<Animator>().SetTrigger("ropepos");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private IEnumerator DelayAndResetAnims()
 	{
-        yield return new WaitForSeconds(.1f);
+        yield return new WaitForSeconds(.05f);
 		GetComponentInChildren<Animator>().ResetTrigger("idle");
 		GetComponentInChildren<Animator>().ResetTrigger("jump");
 		GetComponentInChildren<Animator>().ResetTrigger("run");
 		GetComponentInChildren<Animator>().ResetTrigger("slide");
-		GetComponentInChildren<Animator>().ResetTrigger("crash");
+		GetComponentInChildren<Animator>().ResetTrigger("struggle");
+		GetComponentInChildren<Animator>().ResetTrigger("ropejump");
+		GetComponentInChildren<Animator>().ResetTrigger("ropepos");
 	}
 
 	#endregion
