@@ -23,6 +23,8 @@ public class PlayerController : MonoBehaviour
     public List<GameObject> xIslands = new List<GameObject>();
     public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL,atlamaRopu,sallananRopeL,sallananRopeR,artiBir,eksiBir,model;
     private int ropeCount = 0;
+    public GameObject controlAnimationPanel, leftContolPanel, rightControlPanel, slideControlPanel;
+    private bool isFirstLevel;
 
 
     private void Awake()
@@ -33,6 +35,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        if (PlayerPrefs.GetInt("first") == 0) isFirstLevel = true;
         colliderHeight = GetComponent<CapsuleCollider>().height;
         colliderPosY = GetComponent<CapsuleCollider>().center.y;
         DOTween.Init();
@@ -122,6 +125,7 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator DelayAndNormalizedCollider()
 	{
+
         GetComponent<CapsuleCollider>().height = 1.5f;
         GetComponent<CapsuleCollider>().center = new Vector3(0, .8f, 0);
         yield return new WaitForSeconds(.8f);
@@ -131,6 +135,16 @@ public class PlayerController : MonoBehaviour
 
 	private void MoveHorizontal()
 	{
+		if (isFirstLevel)
+		{
+            GetComponentInChildren<Animator>().speed = 1f;
+            KarakterPaketiMovement.instance._speed = 8;
+            controlAnimationPanel.SetActive(false);
+            rightControlPanel.SetActive(false);
+            leftContolPanel.SetActive(false);
+            slideControlPanel.SetActive(false);
+
+		}
         if (right)
         {
             if (transform.position.x > horizontalRadius - 1) return;
@@ -182,6 +196,16 @@ public class PlayerController : MonoBehaviour
     private void SlideEvents()
 	{
         // collider küçülecek... kayma animasyonu yapılacak... 
+        if (isFirstLevel)
+        {
+            GetComponentInChildren<Animator>().speed = 1f;
+            KarakterPaketiMovement.instance._speed = 8;
+            controlAnimationPanel.SetActive(false);
+            rightControlPanel.SetActive(false);
+            leftContolPanel.SetActive(false);
+            slideControlPanel.SetActive(false);
+
+        }
         SlideAnim();
 	}
 
@@ -255,9 +279,32 @@ public class PlayerController : MonoBehaviour
                 FinalFly();
             }
                     
-        }else if (other.CompareTag("finalx"))
+        }
+        else if (other.CompareTag("finalx"))
 		{
             FinalEffectEvents(other.gameObject);
+        }
+        else if (isFirstLevel && other.CompareTag("control1"))
+		{
+            controlAnimationPanel.SetActive(true);
+            rightControlPanel.SetActive(true);
+            KarakterPaketiMovement.instance._speed = 2;
+            GetComponentInChildren<Animator>().speed = .15f;
+        }
+        else if (isFirstLevel && other.CompareTag("control2"))
+        {
+            controlAnimationPanel.SetActive(true);
+            leftContolPanel.SetActive(true);
+            KarakterPaketiMovement.instance._speed = 2;
+            GetComponentInChildren<Animator>().speed = .15f;
+        }
+        else if (isFirstLevel && other.CompareTag("control3"))
+        {
+            controlAnimationPanel.SetActive(true);
+            slideControlPanel.SetActive(true);
+            KarakterPaketiMovement.instance._speed = 2;
+            GetComponentInChildren<Animator>().speed = .15f;
+
         }
 
     }

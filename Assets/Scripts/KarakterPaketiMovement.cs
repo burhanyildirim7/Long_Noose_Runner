@@ -4,9 +4,16 @@ using UnityEngine;
 
 public class KarakterPaketiMovement : MonoBehaviour
 {
-    [SerializeField] private float _speed;
+    public static KarakterPaketiMovement instance;
+    public float _speed;
 
-    void Update()
+	private void Awake()
+	{
+        if (instance == null) instance = this;
+        else Destroy(this);
+	}
+
+	void Update()
     {
         if (GameController.instance.isContinue == true)
         {

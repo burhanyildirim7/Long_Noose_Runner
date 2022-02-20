@@ -12,6 +12,9 @@ TagManager:
   - collectible
   - elmas
   - finalx
+  - control1
+  - control2
+  - control3
   layers:
   - Default
   - TransparentFX
