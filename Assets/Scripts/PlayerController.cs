@@ -13,7 +13,7 @@ public class PlayerController : MonoBehaviour
     public bool collectibleVarMi = true;
     private bool left, right, isEnableForSwipe;
     [SerializeField] private float skateSpeed = 5.0f;
-    [SerializeField] private float swipeControlLimit;  
+    [SerializeField] private float swipeControlLimit;
     [SerializeField] private float playerSwipeSpeed;
     [SerializeField] private float horizontalRadius = 3;
     private float screenWidth, screenHeight;
@@ -21,10 +21,12 @@ public class PlayerController : MonoBehaviour
     private float colliderHeight, colliderPosY;
     public List<GameObject> circleRopes = new List<GameObject>();
     public List<GameObject> xIslands = new List<GameObject>();
-    public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL,atlamaRopu,sallananRopeL,sallananRopeR,artiBir,eksiBir,model;
+    public GameObject parentRopeR, parentRopeL, bagRopeR, bagRopeL, atlamaRopu, sallananRopeL, sallananRopeR, artiBir, eksiBir, model;
     private int ropeCount = 0;
     public GameObject controlAnimationPanel, leftContolPanel, rightControlPanel, slideControlPanel;
     private bool isFirstLevel;
+
+    [SerializeField] private ParticleSystem _tozEfekti;
 
 
     private void Awake()
@@ -44,99 +46,102 @@ public class PlayerController : MonoBehaviour
         screenWidth = Screen.height / 2;
     }
 
-	private void Update()
-	{
-		#region For Mobile Control ... SBI
-		if (Input.touchCount > 0 && isEnableForSwipe)
-		{
-			Touch myTouch = Input.GetTouch(0);
-			if (myTouch.deltaPosition.x > swipeControlLimit)
-			{
-				isEnableForSwipe = false;
-				right = true;
-				left = false;
-				MoveHorizontal();
-				return;
-
-			}
-			else if (myTouch.deltaPosition.x < -swipeControlLimit)
-			{
-				isEnableForSwipe = false;
-				right = false;
-				left = true;
-				MoveHorizontal();
-				return;
-			}
-			else if (myTouch.deltaPosition.y < -swipeControlLimit)
-			{
-                StartCoroutine(DelayAndNormalizedCollider());
-                //isEnableForSwipe = false;
-				SlideEvents();
-				return;
-			}
-		}
-		#endregion
-
-
-
-		#region For Stand Control ... SBI
-
-		if (Input.GetMouseButtonDown(0))
-		{
-            firstMousePosX = Input.mousePosition.x - screenWidth;
-            firstMousePosY = Input.mousePosition.y - screenHeight;
-        }
-		if (Input.GetMouseButton(0) && isEnableForSwipe)
-		{
-            lastMousePosX = Input.mousePosition.x - screenWidth;
-            lastMousePosY = Input.mousePosition.y - screenHeight;
-            if((lastMousePosX - firstMousePosX) > swipeControlLimit) // sağa
-			{
+    private void Update()
+    {
+        #region For Mobile Control ... SBI
+        if (Input.touchCount > 0 && isEnableForSwipe)
+        {
+            Touch myTouch = Input.GetTouch(0);
+            if (myTouch.deltaPosition.x > swipeControlLimit)
+            {
                 isEnableForSwipe = false;
                 right = true;
                 left = false;
                 MoveHorizontal();
                 return;
+
             }
-            else if((lastMousePosX - firstMousePosX) < -swipeControlLimit) // sola
-			{
+            else if (myTouch.deltaPosition.x < -swipeControlLimit)
+            {
                 isEnableForSwipe = false;
                 right = false;
                 left = true;
                 MoveHorizontal();
                 return;
             }
-            else if((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
-			{
+            else if (myTouch.deltaPosition.y < -swipeControlLimit)
+            {
                 StartCoroutine(DelayAndNormalizedCollider());
                 //isEnableForSwipe = false;
-                SlideEvents();            
+                SlideEvents();
+                return;
+            }
+        }
+        #endregion
+
+
+
+        #region For Stand Control ... SBI
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            firstMousePosX = Input.mousePosition.x - screenWidth;
+            firstMousePosY = Input.mousePosition.y - screenHeight;
+        }
+        if (Input.GetMouseButton(0) && isEnableForSwipe)
+        {
+            lastMousePosX = Input.mousePosition.x - screenWidth;
+            lastMousePosY = Input.mousePosition.y - screenHeight;
+            if ((lastMousePosX - firstMousePosX) > swipeControlLimit) // sağa
+            {
+                _tozEfekti.Play();
+                isEnableForSwipe = false;
+                right = true;
+                left = false;
+                MoveHorizontal();
+                return;
+            }
+            else if ((lastMousePosX - firstMousePosX) < -swipeControlLimit) // sola
+            {
+                _tozEfekti.Play();
+                isEnableForSwipe = false;
+                right = false;
+                left = true;
+                MoveHorizontal();
+                return;
+            }
+            else if ((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
+            {
+                _tozEfekti.Play();
+                StartCoroutine(DelayAndNormalizedCollider());
+                //isEnableForSwipe = false;
+                SlideEvents();
                 return;
             }
         }
 
-		if (Input.GetMouseButtonUp(0))
-		{
+        if (Input.GetMouseButtonUp(0))
+        {
             lastMousePosX = firstMousePosX = lastMousePosY = firstMousePosY = 0;
-		}
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 
     IEnumerator DelayAndNormalizedCollider()
-	{
+    {
 
         GetComponent<CapsuleCollider>().height = 1.5f;
         GetComponent<CapsuleCollider>().center = new Vector3(0, .8f, 0);
         yield return new WaitForSeconds(.8f);
         GetComponent<CapsuleCollider>().height = colliderHeight;
-        GetComponent<CapsuleCollider>().center = new Vector3(0,colliderPosY,0);
-	}
+        GetComponent<CapsuleCollider>().center = new Vector3(0, colliderPosY, 0);
+    }
 
-	private void MoveHorizontal()
-	{
-		if (isFirstLevel)
-		{
+    private void MoveHorizontal()
+    {
+        if (isFirstLevel)
+        {
             GetComponentInChildren<Animator>().speed = 1f;
             KarakterPaketiMovement.instance._speed = 8;
             controlAnimationPanel.SetActive(false);
@@ -144,11 +149,11 @@ public class PlayerController : MonoBehaviour
             leftContolPanel.SetActive(false);
             slideControlPanel.SetActive(false);
 
-		}
+        }
         if (right)
         {
             if (transform.position.x > horizontalRadius - 1) return;
-            else if (transform.position.x > -1) 
+            else if (transform.position.x > -1)
             {
                 JumpAnim();
                 transform.DOMoveX(horizontalRadius, playerSwipeSpeed).OnComplete(() =>
@@ -156,22 +161,22 @@ public class PlayerController : MonoBehaviour
                     isEnableForSwipe = true;
                     return;
                 });
-            }                        
-            else if (transform.position.x  < -1)
-			{
+            }
+            else if (transform.position.x < -1)
+            {
                 JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
-            }          
+            }
         }
         else if (left)
         {
             if (transform.position.x < -horizontalRadius + 1) return;
             else if (transform.position.x < 1)
-			{
+            {
                 JumpAnim();
                 transform.DOMoveX(-horizontalRadius, playerSwipeSpeed).OnComplete(() =>
                 {
@@ -179,9 +184,9 @@ public class PlayerController : MonoBehaviour
                     return;
                 });
             }
-                
+
             else if (transform.position.x > 1)
-			{
+            {
                 JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
@@ -189,12 +194,12 @@ public class PlayerController : MonoBehaviour
                     return;
                 });
             }
-                
+
         }
     }
 
     private void SlideEvents()
-	{
+    {
         // collider küçülecek... kayma animasyonu yapılacak... 
         if (isFirstLevel)
         {
@@ -207,24 +212,26 @@ public class PlayerController : MonoBehaviour
 
         }
         SlideAnim();
-	}
+    }
 
-	/// <summary>
-	/// Playerin collider olaylari.. collectible, engel veya finish noktasi icin. Burasi artirilabilir.
-	/// elmas icin veya baska herhangi etkilesimler icin tag ekleyerek kontrol dongusune eklenir.
-	/// </summary>
-	/// <param name="other"></param>
-	private void OnTriggerEnter(Collider other)
+    /// <summary>
+    /// Playerin collider olaylari.. collectible, engel veya finish noktasi icin. Burasi artirilabilir.
+    /// elmas icin veya baska herhangi etkilesimler icin tag ekleyerek kontrol dongusune eklenir.
+    /// </summary>
+    /// <param name="other"></param>
+    private void OnTriggerEnter(Collider other)
     {
 
         if (other.CompareTag("collectible"))
         {
             // COLLECTIBLE CARPINCA YAPILACAKLAR...
+            MoreMountains.NiceVibrations.MMVibrationManager.Haptic(MoreMountains.NiceVibrations.HapticTypes.MediumImpact);
+
             Destroy(other.gameObject);
             ropeCount++;
             UIController.instance.SetPlayerRopeCountText(ropeCount);
-            if(ropeCount > 0)
-			{
+            if (ropeCount > 0)
+            {
                 sallananRopeL.SetActive(true);
                 sallananRopeR.SetActive(true);
                 bagRopeL.SetActive(true);
@@ -232,12 +239,13 @@ public class PlayerController : MonoBehaviour
             }
             AddRope();
             GameController.instance.SetScore(collectibleDegeri); // ORNEK KULLANIM detaylar icin ctrl+click yapip fonksiyon aciklamasini oku
-            GameObject arti = Instantiate(artiBir, new Vector3(model.transform.position.x,model.transform.position.y + 5,model.transform.position.z), Quaternion.identity, model.transform);
+            GameObject arti = Instantiate(artiBir, new Vector3(model.transform.position.x, model.transform.position.y + 5, model.transform.position.z), Quaternion.identity, model.transform);
             ArtiTextAnim(arti);
         }
         else if (other.CompareTag("engel"))
         {
             // ENGELELRE CARPINCA YAPILACAKLAR....
+            MoreMountains.NiceVibrations.MMVibrationManager.Haptic(MoreMountains.NiceVibrations.HapticTypes.MediumImpact);
 
             GameObject eksi = Instantiate(eksiBir, new Vector3(model.transform.position.x, model.transform.position.y + 3, model.transform.position.z), Quaternion.identity, model.transform);
             EksiTextAnim(eksi);
@@ -253,39 +261,39 @@ public class PlayerController : MonoBehaviour
             }
             AddRope();
             if (GameController.instance.score < 0) // SKOR SIFIRIN ALTINA DUSTUYSE
-			{
+            {
                 GameController.instance.isContinue = false; // çarptığı anda oyuncunun yerinde durması ilerlememesi için
                 UIController.instance.ActivateLooseScreen();
                 IdleAnim();
-			}
-			else
-			{
+            }
+            else
+            {
                 CrashAnim();
-			}   
+            }
 
         }
-        else if (other.CompareTag("finish")) 
+        else if (other.CompareTag("finish"))
         {
-            
+
             GameController.instance.isContinue = false;
-           // GetComponent<Collider>().enabled = false;
-           if(ropeCount == 0)
-			{
-                UIController.instance.ActivateLooseScreen();              
+            // GetComponent<Collider>().enabled = false;
+            if (ropeCount == 0)
+            {
+                UIController.instance.ActivateLooseScreen();
                 return;
             }
-			else
-			{
+            else
+            {
                 FinalFly();
             }
-                    
+
         }
         else if (other.CompareTag("finalx"))
-		{
+        {
             FinalEffectEvents(other.gameObject);
         }
         else if (isFirstLevel && other.CompareTag("control1"))
-		{
+        {
             controlAnimationPanel.SetActive(true);
             rightControlPanel.SetActive(true);
             KarakterPaketiMovement.instance._speed = 2;
@@ -311,28 +319,29 @@ public class PlayerController : MonoBehaviour
 
 
     void AddRope()
-	{
-        if(ropeCount < 0)
-		{
+    {
+        if (ropeCount < 0)
+        {
             GameController.instance.isContinue = false; // çarptığı anda oyuncunun yerinde durması ilerlememesi için
             UIController.instance.ActivateLooseScreen();
             IdleAnim();
         }
-        else if(ropeCount < 8)
-		{
-            if(ropeCount !=0)circleRopes[ropeCount-1].SetActive(true);
-            if(ropeCount< 7)circleRopes[ropeCount].SetActive(false);
-            if (ropeCount !=0) circleRopes[ropeCount + 6].SetActive(true);
+        else if (ropeCount < 8)
+        {
+            if (ropeCount != 0) circleRopes[ropeCount - 1].SetActive(true);
+            if (ropeCount < 7) circleRopes[ropeCount].SetActive(false);
+            if (ropeCount != 0) circleRopes[ropeCount + 6].SetActive(true);
             if (ropeCount < 7) circleRopes[ropeCount + 7].SetActive(false);
-            if(ropeCount == 1)
-			{
-                parentRopeL.transform.localScale = Vector3.one*.016f;
-                parentRopeR.transform.localScale = Vector3.one*.016f;
-                bagRopeL.transform.localScale = Vector3.one*1.1f;
-                bagRopeR.transform.localScale = Vector3.one*1.1f;
-                
-			}else if(ropeCount == 3)
-			{
+            if (ropeCount == 1)
+            {
+                parentRopeL.transform.localScale = Vector3.one * .016f;
+                parentRopeR.transform.localScale = Vector3.one * .016f;
+                bagRopeL.transform.localScale = Vector3.one * 1.1f;
+                bagRopeR.transform.localScale = Vector3.one * 1.1f;
+
+            }
+            else if (ropeCount == 3)
+            {
                 parentRopeL.transform.localScale = Vector3.one * .017f;
                 parentRopeR.transform.localScale = Vector3.one * .017f;
                 bagRopeL.transform.localScale = Vector3.one * 1.2f;
@@ -349,7 +358,7 @@ public class PlayerController : MonoBehaviour
             {
                 parentRopeL.transform.localScale = Vector3.one * .0185f;
                 parentRopeR.transform.localScale = Vector3.one * .0185f;
-                bagRopeL.transform.localScale = new Vector3(1.4f,1.4f,1.6f);
+                bagRopeL.transform.localScale = new Vector3(1.4f, 1.4f, 1.6f);
                 bagRopeR.transform.localScale = new Vector3(1.4f, 1.4f, 1.6f);
             }
             else if (ropeCount == 6)
@@ -361,23 +370,24 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-        
-        
-	}
+
+
+    }
 
     /// <summary>
     /// Bu fonksiyon her level baslarken cagrilir. 
     /// </summary>
     public void StartingEvents()
     {
-        foreach(var rope in circleRopes)
-		{
+        foreach (var rope in circleRopes)
+        {
             rope.SetActive(false);
-           
-		}
+
+        }
         ropeCount = 0;
-        parentRopeL.transform.localScale = Vector3.one*.015f;
-        parentRopeR.transform.localScale = Vector3.one*.015f;
+        UIController.instance.SetPlayerRopeCountText(ropeCount);
+        parentRopeL.transform.localScale = Vector3.one * .015f;
+        parentRopeR.transform.localScale = Vector3.one * .015f;
         bagRopeL.transform.localScale = Vector3.one;
         bagRopeR.transform.localScale = Vector3.one;
         sallananRopeL.SetActive(false);
@@ -386,7 +396,7 @@ public class PlayerController : MonoBehaviour
         bagRopeR.SetActive(false);
         transform.parent.transform.rotation = Quaternion.Euler(0, 0, 0);
         transform.parent.transform.position = Vector3.zero;
-        transform.position = new(0,0.4f,0);
+        transform.position = new(0, 0.4f, 0);
         GameController.instance.isContinue = false;
         GameController.instance.score = 0;
         transform.position = new Vector3(0, transform.position.y, 0);
@@ -395,20 +405,20 @@ public class PlayerController : MonoBehaviour
     }
 
     public void PreStartingEvents()
-	{
+    {
         RunAnim();
         GameController.instance.isContinue = true;
     }
 
     private void FinalFly()
-	{
+    {
         int index = 1;
-        if(ropeCount >= 4 && ropeCount <= 8)
-		{
+        if (ropeCount >= 4 && ropeCount <= 8)
+        {
             // 2x olabilir
             index += 1;
         }
-        else if(ropeCount > 8 && ropeCount <= 10)
+        else if (ropeCount > 8 && ropeCount <= 10)
         {
             // 2x olabilir
             index += 2;
@@ -434,13 +444,13 @@ public class PlayerController : MonoBehaviour
         {
             // 2x olabilir
             index += 6;
-		}
-		else
-		{
+        }
+        else
+        {
             index += 7;
-		}
+        }
         GetComponent<Collider>().enabled = false;
-       
+
         StartCoroutine(FinalFlyMovement(index));
         //transform.DOJump(new Vector3(0, xIslands[index].transform.position.y+10, xIslands[index].transform.position.z),-30+index*2,1, 3f).
         //        OnComplete(() => {
@@ -454,7 +464,7 @@ public class PlayerController : MonoBehaviour
     }
 
     private IEnumerator FinalFlyMovement(int index)
-	{
+    {
         foreach (var rope in circleRopes)
         {
             rope.SetActive(false);
@@ -476,27 +486,28 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(.3f);
         transform.DOJump(new Vector3(0, xIslands[index].transform.position.y + 10, xIslands[index].transform.position.z), -30 + index, 1, 3f).
-                OnComplete(() => {
+                OnComplete(() =>
+                {
                     RopeJumpAnim();
                     atlamaRopu.SetActive(false);
-                    transform.DOMove(xIslands[index].transform.position + new Vector3(0, 2.8f, 0), .5f).SetEase(Ease.OutFlash);               
+                    transform.DOMove(xIslands[index].transform.position + new Vector3(0, 2.8f, 0), .5f).SetEase(Ease.OutFlash);
                     //.OnComplete(() => { GetComponent<Collider>().enabled = true; });
                 });
         yield return new WaitForSeconds(3.5f);
         GetComponent<Collider>().enabled = true;
     }
 
-   void FinalEffectEvents(GameObject island)
-	{
+    void FinalEffectEvents(GameObject island)
+    {
         island.transform.GetChild(0).gameObject.SetActive(true);
         UIController.instance.ActivateWinScreen();
-	}
+    }
 
-	#region ANIMATIONS .....
+    #region ANIMATIONS .....
     private void EksiTextAnim(GameObject obj)
-	{
+    {
         obj.transform.DOScale(Vector3.one * .12f, .4f);
-        obj.transform.DOMoveY(5, .4f).OnComplete(()=> { Destroy(obj); });
+        obj.transform.DOMoveY(5, .4f).OnComplete(() => { Destroy(obj); });
     }
 
     private void ArtiTextAnim(GameObject obj)
@@ -506,37 +517,37 @@ public class PlayerController : MonoBehaviour
     }
 
     private void RunAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("run");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private void IdleAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("idle");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private void JumpAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("jump");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private void SlideAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("slide");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private void CrashAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("struggle");
         StartCoroutine(DelayAndResetAnims());
     }
 
     private void RopeJumpAnim()
-	{
+    {
         GetComponentInChildren<Animator>().SetTrigger("ropejump");
         StartCoroutine(DelayAndResetAnims());
     }
@@ -549,18 +560,18 @@ public class PlayerController : MonoBehaviour
 
 
     private IEnumerator DelayAndResetAnims()
-	{
+    {
         yield return new WaitForSeconds(.05f);
-		GetComponentInChildren<Animator>().ResetTrigger("idle");
-		GetComponentInChildren<Animator>().ResetTrigger("jump");
-		GetComponentInChildren<Animator>().ResetTrigger("run");
-		GetComponentInChildren<Animator>().ResetTrigger("slide");
-		GetComponentInChildren<Animator>().ResetTrigger("struggle");
-		GetComponentInChildren<Animator>().ResetTrigger("ropejump");
-		GetComponentInChildren<Animator>().ResetTrigger("ropepos");
-		GetComponentInChildren<Animator>().ResetTrigger("throw");
-	}
+        GetComponentInChildren<Animator>().ResetTrigger("idle");
+        GetComponentInChildren<Animator>().ResetTrigger("jump");
+        GetComponentInChildren<Animator>().ResetTrigger("run");
+        GetComponentInChildren<Animator>().ResetTrigger("slide");
+        GetComponentInChildren<Animator>().ResetTrigger("struggle");
+        GetComponentInChildren<Animator>().ResetTrigger("ropejump");
+        GetComponentInChildren<Animator>().ResetTrigger("ropepos");
+        GetComponentInChildren<Animator>().ResetTrigger("throw");
+    }
 
-	#endregion
+    #endregion
 
 }
