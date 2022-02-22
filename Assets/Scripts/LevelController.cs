@@ -18,7 +18,7 @@ public class LevelController : MonoBehaviour
 
     private void Start()
     {
-        //PlayerPrefs.DeleteAll();
+       // PlayerPrefs.DeleteAll();
         totalLevelNo = PlayerPrefs.GetInt("level");
         if (totalLevelNo == 0)
         {

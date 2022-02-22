@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        if (PlayerPrefs.GetInt("first") == 0) isFirstLevel = true;
+        if (PlayerPrefs.GetInt("level") == 0) isFirstLevel = true;
         colliderHeight = GetComponent<CapsuleCollider>().height;
         colliderPosY = GetComponent<CapsuleCollider>().center.y;
         DOTween.Init();
@@ -94,7 +94,6 @@ public class PlayerController : MonoBehaviour
             lastMousePosY = Input.mousePosition.y - screenHeight;
             if ((lastMousePosX - firstMousePosX) > swipeControlLimit) // sağa
             {
-                _tozEfekti.Play();
                 isEnableForSwipe = false;
                 right = true;
                 left = false;
@@ -103,7 +102,6 @@ public class PlayerController : MonoBehaviour
             }
             else if ((lastMousePosX - firstMousePosX) < -swipeControlLimit) // sola
             {
-                _tozEfekti.Play();
                 isEnableForSwipe = false;
                 right = false;
                 left = true;
@@ -112,7 +110,6 @@ public class PlayerController : MonoBehaviour
             }
             else if ((lastMousePosY - firstMousePosY) < -swipeControlLimit) // aşşa
             {
-                _tozEfekti.Play();
                 StartCoroutine(DelayAndNormalizedCollider());
                 //isEnableForSwipe = false;
                 SlideEvents();
@@ -150,20 +147,28 @@ public class PlayerController : MonoBehaviour
             slideControlPanel.SetActive(false);
 
         }
+
         if (right)
         {
-            if (transform.position.x > horizontalRadius - 1) return;
+            if (transform.position.x > horizontalRadius - 1)
+            {
+                isEnableForSwipe = true;
+                return;
+            }
             else if (transform.position.x > -1)
             {
+                _tozEfekti.Play();
                 JumpAnim();
                 transform.DOMoveX(horizontalRadius, playerSwipeSpeed).OnComplete(() =>
                 {
                     isEnableForSwipe = true;
                     return;
                 });
+
             }
             else if (transform.position.x < -1)
             {
+                _tozEfekti.Play();
                 JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
@@ -174,9 +179,14 @@ public class PlayerController : MonoBehaviour
         }
         else if (left)
         {
-            if (transform.position.x < -horizontalRadius + 1) return;
+            if (transform.position.x < -horizontalRadius + 1)
+            {
+                isEnableForSwipe = true;
+                return;
+            }
             else if (transform.position.x < 1)
             {
+                _tozEfekti.Play();
                 JumpAnim();
                 transform.DOMoveX(-horizontalRadius, playerSwipeSpeed).OnComplete(() =>
                 {
@@ -187,6 +197,7 @@ public class PlayerController : MonoBehaviour
 
             else if (transform.position.x > 1)
             {
+                _tozEfekti.Play();
                 JumpAnim();
                 transform.DOMoveX(0, playerSwipeSpeed).OnComplete(() =>
                 {
@@ -211,6 +222,7 @@ public class PlayerController : MonoBehaviour
             slideControlPanel.SetActive(false);
 
         }
+        _tozEfekti.Play();
         SlideAnim();
     }
 
