@@ -64,7 +64,7 @@ Material:
     m_Floats:
     - _ChromaticAberration: 0.3
     - _Cutoff: 0.5
-    - _Depth: 13
+    - _Depth: 7
     - _Depthdarkness: 0
     - _ENABLE_GRADIENT: 0
     - _ENABLE_SHADOWS: 0
@@ -98,7 +98,7 @@ Material:
     - _ReflectionStrength: 0
     - _RefractionAmount: 0.0247
     - _RimDistance: 1.91
-    - _RimDistortion: 0.139
+    - _RimDistortion: 0.088
     - _RimSize: 4.6
     - _Rimfalloff: 2.7
     - _Rimtiling: 0.5
@@ -122,7 +122,7 @@ Material:
     - _Wavefoam: 1
     - _Wavesspeed: 0.75
     - _Wavesstrength: 0.268
-    - _Wavetint: -0.077
+    - _Wavetint: 0
     - _Worldspacetiling: 1
     - __dirty: 0
     m_Colors:
