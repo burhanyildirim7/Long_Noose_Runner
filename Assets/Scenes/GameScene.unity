@@ -14708,7 +14708,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Tap & Choose
+  m_Text: Tap & Run
 --- !u!114 &2037673477374901604
 MonoBehaviour:
   m_ObjectHideFlags: 0
